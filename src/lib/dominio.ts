@@ -148,8 +148,8 @@ export function evaluarSla(ot: OrdenTrabajo, ahora = Date.now()): EstadoSla {
 
   if (ot.iniciadaEn) {
     return restanteMs >= 0
-      ? { semaforo: "ok", consumido, restanteMs, etiqueta: `Atendida con ${horas} de margen`, corta: `Atendida · ${horas} antes` }
-      : { semaforo: "vencido", consumido, restanteMs, etiqueta: `Atendida ${horas} tarde`, corta: `Atendida · ${horas} tarde` };
+      ? { semaforo: "ok", consumido, restanteMs, etiqueta: `Atendida con ${horas} de margen`, corta: `A tiempo · ${horas}` }
+      : { semaforo: "vencido", consumido, restanteMs, etiqueta: `Atendida ${horas} tarde`, corta: `Tarde · ${horas}` };
   }
   if (restanteMs < 0)
     return { semaforo: "vencido", consumido, restanteMs, etiqueta: `Vencido hace ${horas}`, corta: `Vencido · ${horas}` };
