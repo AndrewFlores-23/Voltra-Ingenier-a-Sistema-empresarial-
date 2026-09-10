@@ -40,10 +40,15 @@ export function MedidorSla({ ot, compacto }: { ot: OrdenTrabajo; compacto?: bool
   const sla = evaluarSla(ot);
   if (sla.semaforo === "na") return <span className="text-xs text-faint">No aplica</span>;
   return (
-    <div className={compacto ? "w-28" : "w-full"}>
+    <div className={compacto ? "w-36" : "w-full"}>
       <div className="mb-1 flex items-center gap-1.5">
-        <Timer size={12} className={COLOR_SEMAFORO[sla.semaforo]} />
-        <span className={cx("text-[11px] font-semibold", COLOR_SEMAFORO[sla.semaforo])}>{sla.etiqueta}</span>
+        <Timer size={12} className={cx("shrink-0", COLOR_SEMAFORO[sla.semaforo])} />
+        <span
+          className={cx("truncate text-[11px] font-semibold", COLOR_SEMAFORO[sla.semaforo])}
+          title={sla.etiqueta}
+        >
+          {compacto ? sla.corta : sla.etiqueta}
+        </span>
       </div>
       <Barra pct={sla.consumido} clase={BARRA_SEMAFORO[sla.semaforo]} />
     </div>

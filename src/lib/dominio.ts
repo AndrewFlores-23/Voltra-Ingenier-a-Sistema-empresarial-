@@ -126,6 +126,8 @@ export interface EstadoSla {
   consumido: number;
   restanteMs: number;
   etiqueta: string;
+  /** Versión de una sola línea, para tarjetas y celdas angostas */
+  corta: string;
 }
 
 /**
@@ -133,7 +135,8 @@ export interface EstadoSla {
  * llega al sitio. Si ya llegó, el resultado queda congelado.
  */
 export function evaluarSla(ot: OrdenTrabajo, ahora = Date.now()): EstadoSla {
-  if (ot.estado === "cancelada") return { semaforo: "na", consumido: 0, restanteMs: 0, etiqueta: "No aplica" };
+  if (ot.estado === "cancelada")
+    return { semaforo: "na", consumido: 0, restanteMs: 0, etiqueta: "No aplica", corta: "N/A" };
 
   const creada = new Date(ot.creadaEn).getTime();
   const vence = new Date(ot.venceEn).getTime();
@@ -141,15 +144,18 @@ export function evaluarSla(ot: OrdenTrabajo, ahora = Date.now()): EstadoSla {
   const corte = ot.iniciadaEn ? new Date(ot.iniciadaEn).getTime() : ahora;
   const consumido = total > 0 ? (corte - creada) / total : 0;
   const restanteMs = vence - corte;
+  const horas = duracion(Math.abs(restanteMs) / 3600_000);
 
   if (ot.iniciadaEn) {
     return restanteMs >= 0
-      ? { semaforo: "ok", consumido, restanteMs, etiqueta: `Atendida con ${duracion(restanteMs / 3600_000)} de margen` }
-      : { semaforo: "vencido", consumido, restanteMs, etiqueta: `Atendida ${duracion(-restanteMs / 3600_000)} tarde` };
+      ? { semaforo: "ok", consumido, restanteMs, etiqueta: `Atendida con ${horas} de margen`, corta: `Atendida · ${horas} antes` }
+      : { semaforo: "vencido", consumido, restanteMs, etiqueta: `Atendida ${horas} tarde`, corta: `Atendida · ${horas} tarde` };
   }
-  if (restanteMs < 0) return { semaforo: "vencido", consumido, restanteMs, etiqueta: `Vencido ${duracion(-restanteMs / 3600_000)}` };
-  if (consumido > 0.75) return { semaforo: "riesgo", consumido, restanteMs, etiqueta: `Vence en ${duracion(restanteMs / 3600_000)}` };
-  return { semaforo: "ok", consumido, restanteMs, etiqueta: `Vence en ${duracion(restanteMs / 3600_000)}` };
+  if (restanteMs < 0)
+    return { semaforo: "vencido", consumido, restanteMs, etiqueta: `Vencido hace ${horas}`, corta: `Vencido · ${horas}` };
+  if (consumido > 0.75)
+    return { semaforo: "riesgo", consumido, restanteMs, etiqueta: `Vence en ${horas}`, corta: `Vence en ${horas}` };
+  return { semaforo: "ok", consumido, restanteMs, etiqueta: `Vence en ${horas}`, corta: `Vence en ${horas}` };
 }
 
 /** ¿Se cumplió el SLA? null si la OT todavía no fue atendida. */
